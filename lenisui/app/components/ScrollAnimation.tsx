@@ -21,6 +21,8 @@ export function ScrollAnimation() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const videoWrapRef = useRef<HTMLDivElement | null>(null);
   const nextRef = useRef<HTMLDivElement | null>(null);
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const videoEl = videoRef.current;
@@ -123,6 +125,34 @@ export function ScrollAnimation() {
     return () => ctx.revert();
   }, []);
 
+    useEffect(() => {
+  const handleScroll = () => {
+    if (!footerRef.current || !spanRef.current) return;
+
+    const footerRect = footerRef.current.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const scrollIntoFooter = Math.max(0, windowHeight - footerRect.top);
+
+    const minFont = 22;
+    const maxFont = 128;
+    const maxScroll = footerRef.current.offsetHeight;
+    const progress = Math.min(scrollIntoFooter / maxScroll, 1);
+
+    const fontSize = minFont + (maxFont - minFont) * progress;
+    spanRef.current.style.fontSize = `${fontSize}px`;
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("resize", handleScroll);
+  // Initial call
+  handleScroll();
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener("resize", handleScroll);
+  };
+}, []);
+
   return (
     <>
       <div className="h-[152px] bg-[radial-gradient(at_bottom,_#1f1f1f_0%,_#161515_40%,_#47474700_70%,_#00000000_100%)]"></div>
@@ -196,8 +226,8 @@ export function ScrollAnimation() {
           </div>
         </div>
       </div>
-      <footer className="w-full h-screen bg-gradient-to-b from-transparent to-[#ffb224] flex justify-center items-center">
-        <span className={`${myFont.className} text-9xl text-center text-white`}>More Animations to come</span>
+      <footer ref={footerRef} className="w-full h-screen bg-gradient-to-b from-transparent to-[#ffb224] flex justify-center items-center">
+        <span ref={spanRef} style={{ transition: "font-size 0.15s linear" }} className={`${myFont.className} text-center text-white`}>More Animations<br/> to come</span>
       </footer>
     </>
   );
