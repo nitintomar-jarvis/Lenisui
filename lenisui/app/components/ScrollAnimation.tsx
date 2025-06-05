@@ -196,6 +196,9 @@ export function ScrollAnimation() {
           </div>
         </div>
       </div>
+      <footer className="w-full h-screen bg-gradient-to-b from-transparent to-[#ffb224] flex justify-center items-center">
+        <span className={`${myFont.className} text-9xl text-center text-white`}>More Animations to come</span>
+      </footer>
     </>
   );
 }
