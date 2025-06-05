@@ -181,8 +181,8 @@ export function ScrollAnimation() {
             ref={nextRef}
             className="absolute inset-0 flex justify-center items-end opacity-0 z-20 "
           >
-            <div ref={parentRef} className="flex flex-col ml-16 justify-center items-center">
-              <span ref={textRef} className={`${myFont.className} text-7xl text-white`} style={{ willChange: "opacity, transform" }}>
+            <div className="flex flex-col ml-16 justify-center items-center">
+              <span  className={`${myFont.className} text-7xl text-white`} style={{ willChange: "opacity, transform" }}>
                 Experience seamless, smooth modern animation effects
               </span>
               <Image
