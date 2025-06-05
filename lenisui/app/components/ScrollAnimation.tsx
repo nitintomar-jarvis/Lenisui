@@ -22,7 +22,9 @@ export function ScrollAnimation() {
   const videoWrapRef = useRef<HTMLDivElement | null>(null);
   const nextRef = useRef<HTMLDivElement | null>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
-  const footerRef = useRef<HTMLElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const video2Ref = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const videoEl = videoRef.current;
@@ -125,33 +127,80 @@ export function ScrollAnimation() {
     return () => ctx.revert();
   }, []);
 
-    useEffect(() => {
-  const handleScroll = () => {
-    if (!footerRef.current || !spanRef.current) return;
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!footerRef.current || !spanRef.current) return;
 
-    const footerRect = footerRef.current.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    const scrollIntoFooter = Math.max(0, windowHeight - footerRect.top);
+      const footerRect = footerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const scrollIntoFooter = Math.max(0, windowHeight - footerRect.top);
 
-    const minFont = 22;
-    const maxFont = 128;
-    const maxScroll = footerRef.current.offsetHeight;
-    const progress = Math.min(scrollIntoFooter / maxScroll, 1);
+      const minFont = 22;
+      const maxFont = 128;
+      const maxScroll = footerRef.current.offsetHeight;
+      const progress = Math.min(scrollIntoFooter / maxScroll, 1);
 
-    const fontSize = minFont + (maxFont - minFont) * progress;
-    spanRef.current.style.fontSize = `${fontSize}px`;
-  };
+      const fontSize = minFont + (maxFont - minFont) * progress;
+      spanRef.current.style.fontSize = `${fontSize}px`;
+    };
 
-  window.addEventListener("scroll", handleScroll);
-  window.addEventListener("resize", handleScroll);
-  // Initial call
-  handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    handleScroll();
 
-  return () => {
-    window.removeEventListener("scroll", handleScroll);
-    window.removeEventListener("resize", handleScroll);
-  };
-}, []);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sectionRef.current || !video2Ref.current) return;
+
+    const videoEl = video2Ref.current;
+
+    const onLoadedMetadata = () => {
+      const duration = videoEl.duration;
+
+      gsap.to(videoEl, {
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top center",
+          end: "bottom center",
+          scrub: true,
+          markers: false, 
+          onUpdate: (self) => {
+            videoEl.currentTime = self.progress * duration;
+          },
+        },
+        width: window.innerWidth,
+        height: window.innerHeight,
+        borderRadius: 0,
+        ease: "none",
+      });
+
+      gsap.set(videoEl, {
+        width: 300,
+        height: 180,
+        borderRadius: 32,
+        objectFit: "cover",
+        margin: "0 auto",
+        display: "block",
+      });
+    };
+
+    if (videoEl.readyState >= 1) {
+      onLoadedMetadata();
+    } else {
+      videoEl.addEventListener("loadedmetadata", onLoadedMetadata);
+    }
+
+    return () => {
+      videoEl.removeEventListener("loadedmetadata", onLoadedMetadata);
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      gsap.killTweensOf(videoEl);
+    };
+  }, []);
 
   return (
     <>
@@ -212,7 +261,10 @@ export function ScrollAnimation() {
             className="absolute inset-0 flex justify-center items-end opacity-0 z-20 "
           >
             <div className="flex flex-col ml-16 justify-center items-center">
-              <span  className={`${myFont.className} text-7xl text-white`} style={{ willChange: "opacity, transform" }}>
+              <span
+                className={`${myFont.className} text-7xl text-white`}
+                style={{ willChange: "opacity, transform" }}
+              >
                 Experience seamless, smooth modern animation effects
               </span>
               <Image
@@ -226,9 +278,42 @@ export function ScrollAnimation() {
           </div>
         </div>
       </div>
-      <footer ref={footerRef} className="w-full h-screen bg-gradient-to-b from-transparent to-[#ffb224] flex justify-center items-center">
-        <span ref={spanRef} style={{ transition: "font-size 0.15s linear" }} className={`${myFont.className} text-center text-white`}>More Animations<br/> to come</span>
-      </footer>
+      <div
+        ref={footerRef}
+        className="w-full h-screen bg-gradient-to-b from-transparent to-[#ffb224] flex justify-center items-center"
+      >
+        <span
+          ref={spanRef}
+          style={{ transition: "font-size 0.15s linear" }}
+          className={`${myFont.className} text-center text-white`}
+        >
+          More Animations
+          <br /> to come
+        </span>
+      </div>
+
+      <section
+        ref={sectionRef}
+        className="w-full h-screen bg-gradient-to-b from-[#ffb224] to-transparent pt-20 justify-center items-center flex"
+      >
+        <video
+          ref={video2Ref}
+          width="100%"
+          height="100%"
+          muted
+          loop={false}
+          className="object-cover block"
+          style={{
+            width: 300,
+            height: 180,
+            borderRadius: 32,
+            transition: "none",
+          }}
+        >
+          <source src="/HeroVideo2.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </section>
     </>
   );
 }
